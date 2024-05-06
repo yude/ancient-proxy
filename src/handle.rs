@@ -1,5 +1,3 @@
-use std::io::Cursor;
-use image::io::Reader as ImageReader;
 use actix_web::{HttpRequest, HttpResponse};
 use reqwest::{self, Client};
 
@@ -19,20 +17,7 @@ pub async fn handle(req: HttpRequest) -> HttpResponse {
                             HttpResponse::NotFound().body("This proxy does not accept text/css.")
                         }
                         "image/webp" => {
-                            let b = &res.bytes()
-                                .await
-                                .unwrap();
-        
-                            let img = ImageReader::new(Cursor::new(b))
-                                .with_guessed_format()
-                                .expect("Failed to guess image format")
-                                .decode()
-                                .expect("Failed to decode image");
-                            
-                            let mut converted: Vec<u8> = Vec::new();
-                            let _ = img.write_to(&mut Cursor::new(&mut converted), image::ImageFormat::Png);
-        
-                            HttpResponse::Ok().body(converted)
+                            crate::content::webp::handle(res).await
                         }
                         _ => {
                             let b = &res.bytes()
